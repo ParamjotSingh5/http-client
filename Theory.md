@@ -53,6 +53,13 @@
         - Before making a request, we need to know who we are talking with. We use structure called `sockaddr_in` to store the IP address and the port of server.
     - The Connection (`connect()`)
         - Socket’s `connect` initiates the 3-way handshake. Returns `0` means connection is open for further communication.
+    >In the early days of the web (HTTP/1.0), every single request required a brand new handshake. If that index.html file had 10 images, your browser had to perform 10 more handshakes to get those images. This was slow because handshakes take time (latency).
+    The code will `connect()`, `write()` the request, `read()` the response, and then immediately call `close()`.
+    >
+    
+    >HTTP/1.1: "Keep-Alive” introduced Persistent Connections. This is what we will likely implement in your C++ client.
+    We will `connect()` once, and then use a while loop to `write()` and `read()` multiple times using the same File Descriptor before finally calling `close()`.
+    >
 - The three-way handshake (SYN, SYN-ACK, ACK)
     - SYN (Synchronize): Request by client with a flag called **`SYN`** with sequence number **`X`.** This is how TCP keeps track of order of bytes and request if there is a missing sequence in stream. If SYN is 100, then 101 should come next.
     - SYN-ACK (Synchronize-Acknowledge): Server receives the request and respond with both flags SYN and ACK. **`ACK: X+1, SYN: Y`.** Y is server’s starting sequence number.
