@@ -53,3 +53,10 @@
         - Before making a request, we need to know who we are talking with. We use structure called `sockaddr_in` to store the IP address and the port of server.
     - The Connection (`connect()`)
         - Socket’s `connect` initiates the 3-way handshake. Returns `0` means connection is open for further communication.
+- The three-way handshake (SYN, SYN-ACK, ACK)
+    - SYN (Synchronize): Request by client with a flag called **`SYN`** with sequence number **`X`.** This is how TCP keeps track of order of bytes and request if there is a missing sequence in stream. If SYN is 100, then 101 should come next.
+    - SYN-ACK (Synchronize-Acknowledge): Server receives the request and respond with both flags SYN and ACK. **`ACK: X+1, SYN: Y`.** Y is server’s starting sequence number.
+    - ACK (Acknowledge): Client sends final packet with just ACK flag. `ACK: Y+1`
+    
+    > Both sides now have a baseline "Sequence Number." If a packet goes missing later, the receiver can say, "Hey, I have #500 and #502, but where is #501?”
+    >
