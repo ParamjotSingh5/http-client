@@ -3,7 +3,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-int main(){
+int exploreAddressInfos(){
     struct addrinfo hints = {0}; // Sets everything to zero immediately
     struct addrinfo *resolvedAddressInfoPtr; // The getaddrinfo will prepare a LinkedList of type addrinfo in heap. 
     // then it needs to tell us the memory address of the first item in that list.

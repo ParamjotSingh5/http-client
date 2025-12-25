@@ -10,4 +10,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 4. Create the executable
 # Syntax: add_executable(ExecutableName source_file.cpp)
-add_executable(explorer src/ExploreAddress.cpp)
+file(GLOB SRC_FILES "./src/*.cpp")
+add_executable(tcpClient ${SRC_FILES})
