@@ -26,6 +26,10 @@ bool TcpClient::connect(const string& host, const string& port) {
     // then it needs to tell us the memory address of the first item in that list.
     // To change the value of the pointer resolvedAddressInfoPtr so that it points to the new memory location, the function needs the address of your pointer.
 
+    // Define attributes values to filter conections we are willing to support and connect. The getaddrinfo function will use these values while resolving available addresses on host.
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM; // We  TCP contract 
+
     // 2. Resolve Hostname to IP Address and Port
     // getaddrinfo populates server_info with a linked list of possible addresses.
     int status = getaddrinfo(host.c_str(), port.c_str(), &hints, &resolvedAddressInfoPtr);
@@ -63,4 +67,65 @@ bool TcpClient::connect(const string& host, const string& port) {
 
     // Success!
     return true;
+}
+
+// --- Send Function ---
+bool TcpClient::send(const string& data) {
+    if (socket_fd_ == -1) {
+        cerr << "Error: Cannot send data, socket is not connected." << endl;
+        return false;
+    }
+
+    const char* buffer = data.c_str();
+    size_t total_sent = 0;
+    size_t data_len = data.length();
+    int bytes_sent;
+
+    // Loop until all bytes have been sent (this is crucial for reliability)
+    while (total_sent < data_len) {
+        // The send() function attempts to send data on the socket.
+        bytes_sent = ::send(socket_fd_, buffer + total_sent, data_len - total_sent, 0);
+
+        if (bytes_sent == -1) {
+            cerr << "Error sending data: " << strerror(errno) << endl;
+            return false;
+        }
+        if (bytes_sent == 0) {
+            // Should not happen on a blocking TCP socket unless connection is closed prematurely
+            cerr << "Warning: Zero bytes sent, connection likely closed." << endl;
+            return false;
+        }
+
+        total_sent += bytes_sent;
+    }
+
+    return true;
+}
+
+// --- Receive Function (Reads until connection closes) ---
+string TcpClient::receive(size_t max_bytes) {
+    if (socket_fd_ == -1) {
+        cerr << "Error: Cannot receive data, socket is not connected." << endl;
+        return "";
+    }
+
+    std::string received_data;
+    std::vector<char> buffer(max_bytes);
+    int bytes_read;
+
+    // Loop to read data chunks until the connection is closed (bytes_read == 0)
+    while ((bytes_read = ::recv(socket_fd_, buffer.data(), buffer.size(), 0)) > 0) {
+        // Append the received chunk to our result string
+        received_data.append(buffer.data(), bytes_read);
+    }
+
+    if (bytes_read == -1) {
+        // An error occurred during reading (e.g., connection reset)
+        cerr << "Error receiving data: " << strerror(errno) << endl;
+        return "";
+    }
+
+    // If bytes_read == 0, the server gracefully closed the connection, which is the expected
+    // end of the response stream for a basic HTTP/1.1 client using Connection: close.
+    return received_data;
 }

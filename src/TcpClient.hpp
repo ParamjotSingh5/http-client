@@ -10,6 +10,8 @@ public:
     ~TcpClient() { close(); } // Use RAII principle
     
     bool connect(const std::string& host, const std::string& port);
+    bool send(const std::string& data);
+    std::string receive(size_t max_bytes = 4096);
     void close();
 
 private:
