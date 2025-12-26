@@ -1,5 +1,26 @@
 # http-client
 
+## Tooling setup on macOS
+
+### Compiler and basic tools
+
+1. GET clang++ and standard header: run in your bash: `xcode-select --install`
+2. Install CMake
+    ```
+    brew install cmake ninja
+    ```
+
+### Build and run on macOS:
+1. From project root:
+    ```
+    mkdir -p build
+    cd build
+
+    cmake -G Ninja ..
+    cmake --build .
+    ```
+2. We should have executable in build directory with `httpClient`. To make a stubbed request to `google.com/search?q=lyon+city`, run the executable with `./httpClient`.
+
 ## Notes:
 
 ### Socket:
