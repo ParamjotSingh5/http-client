@@ -1,5 +1,5 @@
-// src/main.cpp - Sequential/Single-Threaded Test
-#include "TcpClient.hpp"
+
+#include "HttpClient.hpp"
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -14,50 +14,26 @@ using namespace std::chrono;
 
 // --- Sequential Fetch Function (No threading) ---
 void sendHTTPRequest(const string& host, const string& path, int id) {
-    TcpClient client;
-    
-    // Attempt to connect to the server (HTTP default port 80)
-    if (client.connect(host, "80")) {
+    HttpClient http_client_;
 
-        // 1. Construct the HTTP Request String
-        std::stringstream request;
-        
-        // a. Request Line: GET /path HTTP/1.1
-        request << "GET " << path << " HTTP/1.1\r\n";
-        
-        // b. Host Header (Mandatory in HTTP/1.1):
-        request << "Host: " << host << "\r\n";
-        
-        // c. Connection Header (Tells server to close socket after response, simplifying our receive logic)
-        request << "Connection: close\r\n";
-        
-        // d. Empty Line (Signals the end of headers, CRUCIAL for the protocol)
-        request << "\r\n"; 
+    if(http_client_.connect(host, "80")){
+        cout << "Conected to " << host << ". Sending GET request." << endl;
 
-        string full_request = request.str();
-        
-        // 2. Send Request
-        if (!client.send(full_request)) {
-            cerr << "Failed to send HTTP request." << endl;
-            return;
+        std::string response = http_client_.get(path);
+
+        if(!response.empty()){
+            size_t header_end = response.find("\r\n\r\n");
+            size_t body_size = (header_end != string::npos) ? response.length() - (header_end + 4) : 0;
+
+            cout << "Request Received " << response.length() << "total bytes (" 
+                << body_size << " body bytes)." << endl;
         }
-        
-        // 3. Receive Response
-        // We rely on the TcpClient::receive() function to read until the server closes the connection.
-        string raw_response = client.receive();
-        
-        // 4. Basic Error Check
-        if (raw_response.empty()) {
-            cerr << "Received empty response or error during receive." << endl;
-            return;
+        else {
+             cerr << "Request Failed to receive a response." << endl;
         }
 
-        cout << "response:" << "/r/n" << raw_response << endl;
-        
-        
-        client.close();
-    } else {
-        cerr << "[Request " << id << "] ❌ Failed to connect to " << host << endl;
+    }else {
+        cerr << "Request Failed to connect to " << host << endl;
     }
 }
 
