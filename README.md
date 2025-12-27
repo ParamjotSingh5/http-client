@@ -19,7 +19,7 @@
     cmake -G Ninja ..
     cmake --build .
     ```
-2. We should have executable in build directory with `httpClient`. To make a stubbed request to `google.com/search?q=lyon+city`, run the executable with `./httpClient`.
+2. We should have executable in build directory with `httpClient`. Run the executable to perform GET requests.
 
 ## Notes:
 
